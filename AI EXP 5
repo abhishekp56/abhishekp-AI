@@ -1,0 +1,73 @@
+from collections import deque
+
+# State is represented as (M_left, C_left, Boat_position, M_right, C_right)
+# Boat_position: "left" or "right"
+
+def is_valid(state):
+    M_left, C_left, _, M_right, C_right = state
+    
+    # Missionaries can't be outnumbered on either bank (if missionaries > 0)
+    if (M_left < C_left and M_left > 0) or (M_right < C_right and M_right > 0):
+        return False
+    
+    # Check bounds (0 to 3)
+    if not (0 <= M_left <= 3 and 0 <= C_left <= 3 and 0 <= M_right <= 3 and 0 <= C_right <= 3):
+        return False
+    
+    return True
+
+
+def get_successors(state):
+    successors = []
+    M_left, C_left, boat, M_right, C_right = state
+    
+    if boat == "left":  # Boat moves from left to right
+        moves = [(1,0), (2,0), (0,1), (0,2), (1,1)]  # Possible moves
+        for M, C in moves:
+            new_state = (M_left - M, C_left - C, "right", M_right + M, C_right + C)
+            if is_valid(new_state):
+                successors.append(new_state)
+    else:  # Boat moves from right to left
+        moves = [(1,0), (2,0), (0,1), (0,2), (1,1)]
+        for M, C in moves:
+            new_state = (M_left + M, C_left + C, "left", M_right - M, C_right - C)
+            if is_valid(new_state):
+                successors.append(new_state)
+    
+    return successors
+
+
+def bfs():
+    start = (3, 3, "left", 0, 0)
+    goal = (0, 0, "right", 3, 3)
+    
+    queue = deque([(start, [start])])
+    visited = set()
+    
+    while queue:
+        state, path = queue.popleft()
+        
+        if state == goal:
+            return path
+        
+        if state in visited:
+            continue
+        
+        visited.add(state)
+        
+        for succ in get_successors(state):
+            if succ not in visited:
+                queue.append((succ, path + [succ]))
+    
+    return None
+
+
+if __name__ == "__main__":
+    solution = bfs()
+    
+    if solution:
+        print("Solution found!\n")
+        for step in solution:
+            print(step)
+    else:
+        print("No solution exists.")
