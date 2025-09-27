@@ -1,0 +1,64 @@
+from collections import deque
+
+def water_jug_solver(jug1_capacity, jug2_capacity, target):
+    visited = set()
+    queue = deque()
+    
+    # Start with both jugs empty
+    queue.append(((0, 0), []))
+    
+    while queue:
+        (jug1, jug2), path = queue.popleft()
+        
+        # If target is reached
+        if jug1 == target or jug2 == target:
+            path.append((jug1, jug2))
+            return path
+        
+        if (jug1, jug2) in visited:
+            continue
+        
+        visited.add((jug1, jug2))
+        
+        # Possible operations
+        next_states = [
+            ((jug1_capacity, jug2), "Fill Jug1"),
+            ((jug1, jug2_capacity), "Fill Jug2"),
+            ((0, jug2), "Empty Jug1"),
+            ((jug1, 0), "Empty Jug2"),
+            # Pour Jug1 → Jug2
+            ((
+                jug1 - min(jug1, jug2_capacity - jug2),
+                jug2 + min(jug1, jug2_capacity - jug2)
+             ), "Pour Jug1 -> Jug2"),
+            # Pour Jug2 → Jug1
+            ((
+                jug1 + min(jug2, jug1_capacity - jug1),
+                jug2 - min(jug2, jug1_capacity - jug1)
+             ), "Pour Jug2 -> Jug1")
+        ]
+        
+        for state, action in next_states:
+            if state not in visited:
+                queue.append((state, path + [(jug1, jug2, action)]))
+    
+    return None
+
+
+if __name__ == "__main__":
+    # User input
+    jug1_capacity = int(input("Enter capacity of Jug1: "))
+    jug2_capacity = int(input("Enter capacity of Jug2: "))
+    target = int(input("Enter target amount: "))
+    
+    solution = water_jug_solver(jug1_capacity, jug2_capacity, target)
+    
+    if solution:
+        print("\nSolution found:")
+        for step in solution:
+            if len(step) == 3:
+                print(f"State: ({step[0]}, {step[1]}) -> {step[2]}")
+            else:
+                print(f"Final State: {step}")
+    else:
+        print("\nNo solution exists.")
